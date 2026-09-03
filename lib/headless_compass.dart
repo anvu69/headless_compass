@@ -42,8 +42,8 @@ class HeadingSample {
 /// `CLLocationManager`, và spec §5.7 đòi một ranh giới không gói nào giữ hộ —
 /// quyền vị trí chỉ xin khi bấm "Bắc thật".
 class HeadingSource {
-  static const String methodChannelName = 'lobanar/heading';
-  static const String eventChannelName = 'lobanar/heading/stream';
+  static const String methodChannelName = 'headless_compass/method';
+  static const String eventChannelName = 'headless_compass/stream';
 
   static const MethodChannel _method = MethodChannel(methodChannelName);
   static const EventChannel _events = EventChannel(eventChannelName);

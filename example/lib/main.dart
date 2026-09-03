@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'dart:async';
 
 import 'package:flutter/services.dart';
-import 'package:lobanar_heading/lobanar_heading.dart';
+import 'package:headless_compass/headless_compass.dart';
 
 void main() {
   runApp(const MyApp());

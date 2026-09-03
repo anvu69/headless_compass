@@ -1,6 +1,6 @@
-# lobanar_heading_example
+# headless_compass_example
 
-Demonstrates how to use the lobanar_heading plugin.
+Demonstrates how to use the headless_compass plugin.
 
 ## Getting Started
 

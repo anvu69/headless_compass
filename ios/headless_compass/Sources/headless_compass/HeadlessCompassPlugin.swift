@@ -12,7 +12,7 @@ import UIKit
 ///
 /// Theo `FlutterPlugin` để Flutter tự đăng ký qua `GeneratedPluginRegistrant`.
 /// App không phải gọi tay, và đó chính là chỗ dễ quên khi dựng engine mới.
-public class LobanarHeadingPlugin: NSObject, FlutterPlugin {
+public class HeadlessCompassPlugin: NSObject, FlutterPlugin {
   private let manager = CLLocationManager()
   private var sink: FlutterEventSink?
 
@@ -23,14 +23,14 @@ public class LobanarHeadingPlugin: NSObject, FlutterPlugin {
   private var wantsTrueNorth = false
 
   public static func register(with registrar: FlutterPluginRegistrar) {
-    let instance = LobanarHeadingPlugin()
+    let instance = HeadlessCompassPlugin()
 
     let method = FlutterMethodChannel(
-      name: "lobanar/heading", binaryMessenger: registrar.messenger())
+      name: "headless_compass/method", binaryMessenger: registrar.messenger())
     registrar.addMethodCallDelegate(instance, channel: method)
 
     let events = FlutterEventChannel(
-      name: "lobanar/heading/stream", binaryMessenger: registrar.messenger())
+      name: "headless_compass/stream", binaryMessenger: registrar.messenger())
     events.setStreamHandler(instance)
   }
 
@@ -67,7 +67,7 @@ public class LobanarHeadingPlugin: NSObject, FlutterPlugin {
   }
 }
 
-extension LobanarHeadingPlugin: FlutterStreamHandler {
+extension HeadlessCompassPlugin: FlutterStreamHandler {
   public func onListen(
     withArguments _: Any?, eventSink: @escaping FlutterEventSink
   ) -> FlutterError? {
@@ -89,7 +89,7 @@ extension LobanarHeadingPlugin: FlutterStreamHandler {
   }
 }
 
-extension LobanarHeadingPlugin: CLLocationManagerDelegate {
+extension HeadlessCompassPlugin: CLLocationManagerDelegate {
   public func locationManager(
     _: CLLocationManager, didUpdateHeading newHeading: CLHeading
   ) {

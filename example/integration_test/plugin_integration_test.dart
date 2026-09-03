@@ -9,7 +9,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
-import 'package:lobanar_heading/lobanar_heading.dart';
+import 'package:headless_compass/headless_compass.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();

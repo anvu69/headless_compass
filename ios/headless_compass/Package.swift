@@ -4,19 +4,19 @@
 import PackageDescription
 
 let package = Package(
-    name: "lobanar_heading",
+    name: "headless_compass",
     platforms: [
         .iOS("13.0")
     ],
     products: [
-        .library(name: "lobanar-heading", targets: ["lobanar_heading"])
+        .library(name: "headless-compass", targets: ["headless_compass"])
     ],
     dependencies: [
         .package(name: "FlutterFramework", path: "../FlutterFramework")
     ],
     targets: [
         .target(
-            name: "lobanar_heading",
+            name: "headless_compass",
             dependencies: [
                 .product(name: "FlutterFramework", package: "FlutterFramework")
             ],

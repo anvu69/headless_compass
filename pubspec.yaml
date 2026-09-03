@@ -1,4 +1,4 @@
-name: lobanar_heading
+name: headless_compass
 description: "A new Flutter plugin project."
 version: 0.0.1
 homepage:
@@ -35,7 +35,7 @@ flutter:
   plugin:
     platforms:
       ios:
-        pluginClass: LobanarHeadingPlugin
+        pluginClass: HeadlessCompassPlugin
 
   # To add assets to your plugin package, add an assets section, like this:
   # assets:

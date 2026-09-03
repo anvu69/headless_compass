@@ -93,6 +93,13 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  headless_compass:
+    dependency: "direct main"
+    description:
+      path: ".."
+      relative: true
+    source: path
+    version: "0.0.1"
   integration_test:
     dependency: "direct dev"
     description: flutter
@@ -130,13 +137,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.0"
-  lobanar_heading:
-    dependency: "direct main"
-    description:
-      path: ".."
-      relative: true
-    source: path
-    version: "0.0.1"
   matcher:
     dependency: transitive
     description:

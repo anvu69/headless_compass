@@ -3,7 +3,7 @@ import UIKit
 import XCTest
 
 
-@testable import lobanar_heading
+@testable import headless_compass
 
 // This demonstrates a simple unit test of the Swift portion of this plugin's implementation.
 //
