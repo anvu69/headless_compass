@@ -1,3 +1,10 @@
+## 0.1.1
+
+* Fix podspec metadata: 0.1.0 shipped with the `flutter create` template values
+  (`Your Company`, `email@example.com`, `http://example.com`) and a version
+  field stuck at `0.0.1`.
+* Add a privacy manifest declaring that this package collects nothing.
+
 ## 0.1.0
 
 First release.

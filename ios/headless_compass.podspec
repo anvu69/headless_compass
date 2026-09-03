@@ -4,14 +4,16 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'headless_compass'
-  s.version          = '0.0.1'
-  s.summary          = 'A new Flutter plugin project.'
+  s.version          = '0.1.1'
+  s.summary          = 'Headless iOS compass: heading, accuracy and source as a stream.'
   s.description      = <<-DESC
-A new Flutter plugin project.
+Wraps CLLocationManager heading into a typed Dart stream. No widgets, no
+exceptions, and no location permission until the app explicitly asks for true
+north.
                        DESC
-  s.homepage         = 'http://example.com'
+  s.homepage         = 'https://github.com/anvu69/headless_compass'
   s.license          = { :file => '../LICENSE' }
-  s.author           = { 'Your Company' => 'email@example.com' }
+  s.author           = { 'anvu69' => 'anvu69@users.noreply.github.com' }
   s.source           = { :path => '.' }
   s.source_files = 'headless_compass/Sources/headless_compass/**/*'
   s.dependency 'Flutter'
@@ -21,9 +23,7 @@ A new Flutter plugin project.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
   s.swift_version = '5.0'
 
-  # If your plugin requires a privacy manifest, for example if it uses any
-  # required reason APIs, update the PrivacyInfo.xcprivacy file to describe your
-  # plugin's privacy impact, and then uncomment this line. For more information,
-  # see https://developer.apple.com/documentation/bundleresources/privacy_manifest_files
-  # s.resource_bundles = {'headless_compass_privacy' => ['headless_compass/Sources/headless_compass/PrivacyInfo.xcprivacy']}
+  # Bản kê khai quyền riêng tư: gói này KHÔNG thu thập gì. Kê khai rõ chuyện đó
+  # đỡ cho app dùng gói một câu phải tự trả lời khi nộp App Store.
+  s.resource_bundles = {'headless_compass_privacy' => ['headless_compass/Sources/headless_compass/PrivacyInfo.xcprivacy']}
 end

@@ -1,6 +1,6 @@
 name: headless_compass
 description: "Headless iOS compass: a typed stream of magnetic and true heading with accuracy. No widgets, no exceptions, no location permission until you ask for it."
-version: 0.1.0
+version: 0.1.1
 homepage: https://github.com/anvu69/headless_compass
 repository: https://github.com/anvu69/headless_compass
 issue_tracker: https://github.com/anvu69/headless_compass/issues
