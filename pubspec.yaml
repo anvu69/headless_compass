@@ -1,7 +1,15 @@
 name: headless_compass
-description: "A new Flutter plugin project."
-version: 0.0.1
-homepage:
+description: "Headless iOS compass: a typed stream of magnetic and true heading with accuracy. No widgets, no exceptions, no location permission until you ask for it."
+version: 0.1.0
+homepage: https://github.com/anvu69/headless_compass
+repository: https://github.com/anvu69/headless_compass
+issue_tracker: https://github.com/anvu69/headless_compass/issues
+
+topics:
+  - compass
+  - heading
+  - sensors
+  - ios
 
 environment:
   sdk: ^3.12.2
@@ -10,7 +18,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  plugin_platform_interface: ^2.0.2
 
 dev_dependencies:
   flutter_test:

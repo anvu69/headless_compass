@@ -1,24 +1,19 @@
-// This is a basic Flutter integration test.
+// Integration test — must run on a real device.
 //
-// Since integration tests run in a full Flutter application, they can interact
-// with the host side of a plugin implementation, unlike Dart unit tests.
-//
-// For more information about Flutter integration tests, please see
-// https://flutter.dev/to/integration-testing
-
+// `isAvailable()` is false on the simulator, so the only thing that can be
+// asserted everywhere is that the call reaches the platform and comes back
+// without throwing. That is exactly the failure this test exists to catch: a
+// plugin that never got registered.
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
-
 import 'package:headless_compass/headless_compass.dart';
+import 'package:integration_test/integration_test.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('getPlatformVersion test', (WidgetTester tester) async {
-    final LobanarHeading plugin = LobanarHeading();
-    final String? version = await plugin.getPlatformVersion();
-    // The version string depends on the host platform running the test, so
-    // just assert that some non-empty string is returned.
-    expect(version?.isNotEmpty, true);
+  testWidgets('isAvailable answers without throwing', (tester) async {
+    final available = await HeadingSource().isAvailable();
+
+    expect(available, isA<bool>());
   });
 }

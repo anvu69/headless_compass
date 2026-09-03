@@ -1,72 +1,95 @@
 # headless_compass
 
-La bàn **không giao diện** cho iOS. Không widget nào — chỉ một luồng dữ liệu:
-hướng, sai số, và nguồn số đo.
+A headless compass for iOS. No widgets — just a typed stream of heading,
+accuracy, and where the number came from.
 
-> Headless compass for iOS: no widgets, just a typed stream of heading, accuracy
-> and source. Magnetic heading needs no permission; true north is requested only
-> when you ask for it.
+Every other Flutter compass package ships a dial. This one ships the data and
+lets you draw whatever you want.
 
-## Ba thứ gói này làm
+## Install
 
-| Hàm | Việc |
-|---|---|
-| `isAvailable()` | `CLLocationManager.headingAvailable()` hỏi **lúc chạy**, không suy từ đời máy |
-| `watch()` | Luồng `HeadingSample`: độ, sai số, và nguồn (từ bắc hay bắc thật) |
-| `requestTrueNorth()` | Xin quyền vị trí **chỉ khi được gọi**, rồi bật bắc thật |
+```yaml
+dependencies:
+  headless_compass: ^0.1.0
+```
+
+iOS only. There is no Android implementation, and that is deliberate — this
+package wraps `CLLocationManager`, and everything in it is Apple's semantics.
+
+## Use
 
 ```dart
 final compass = HeadingSource();
 
 if (await compass.isAvailable()) {
-  compass.watch().listen((s) {
-    if (!s.isUsable) return;      // sai số âm: iOS đang nói "đừng tin"
-    print('${s.deg}° ±${s.accuracyDeg}° (${s.kind.name})');
+  compass.watch().listen((sample) {
+    if (!sample.isUsable) return;   // Apple says: do not trust this reading
+    print('${sample.deg}° ±${sample.accuracyDeg}° (${sample.kind.name})');
   });
 }
 ```
 
-## Hai quy ước ÂM của Apple
+| Call | What it does |
+|---|---|
+| `isAvailable()` | `CLLocationManager.headingAvailable()`, asked **at runtime** |
+| `watch()` | Stream of `HeadingSample`: degrees, accuracy, source |
+| `requestTrueNorth()` | Asks for location permission **only when called** |
 
-Đây là phần dễ sai nhất, nên đặt lên đầu.
+## Two negative-number conventions that bite
 
-- **`headingAccuracy` âm** nghĩa là số đo **không tin được** — không phải lỗi.
-  `HeadingSample.isUsable` trả `false` cho mọi mẫu như vậy. Quay mặt số theo nó
-  là hiện một con số sai mà không có dấu hiệu nào.
-- **`trueHeading` âm** nghĩa là **chưa có vị trí**. Gói rơi về `magneticHeading`
-  ngay trong Swift thay vì đẩy số âm sang Dart; đẩy sang thì Dart coi là không
-  dùng được, và mặt số đứng im dù từ kế vẫn tốt.
+This is the part that is easy to get wrong, so it goes first.
 
-## Không bao giờ ném
+**A negative `headingAccuracy` means the reading cannot be trusted.** It is not
+an error code you can ignore — it is iOS telling you the magnetometer is
+confused. `HeadingSample.isUsable` returns `false` for those samples. Rotating a
+dial to an untrusted number shows the user a wrong value with no sign that it is
+wrong.
 
-Kênh nền tảng hỏng — chạy trên máy ảo, chạy trước khi plugin đăng ký xong, bản
-dựng thiếu tệp Swift — đều cho ra `isAvailable() == false` chứ không ném. Ứng
-dụng gọi nó không phải bọc `try`, và một màn hình trắng không bao giờ là hậu quả
-của việc thiếu từ kế.
+**A negative `trueHeading` means there is no location fix yet.** This package
+falls back to `magneticHeading` inside Swift rather than passing the negative
+number to Dart. Passing it through would mark the sample unusable, and the dial
+would freeze while the magnetometer was working perfectly.
 
-## Quyền vị trí
+## It never throws
 
-Gói **không** khai `NSLocationWhenInUseUsageDescription`. Câu giải thích quyền
-là chuyện của sản phẩm, không phải của thư viện — app dùng gói tự khai lấy.
+A missing plugin registration, a simulator, a device with no magnetometer — all
+of them surface as `isAvailable() == false`. You do not need a `try` around any
+call in this package, and a blank screen is never the consequence of a missing
+sensor.
 
-Từ bắc **không** cần quyền. Chỉ `requestTrueNorth()` mới xin, và chỉ khi được
-gọi. Người dùng từ chối thì luồng vẫn chạy, chỉ ở lại từ bắc.
+The trade-off: **you cannot tell "no magnetometer" apart from "plugin not
+registered" at runtime.** If you need to prove the plugin is wired up, check
+three static places instead of the logs:
 
-## Chỉ iOS
+- `ios/Runner/GeneratedPluginRegistrant.m` for `HeadlessCompassPlugin`
+- `ios/Podfile.lock` for `headless_compass`
+- `YourApp.app/Frameworks/` for `headless_compass.framework`
 
-Không có phần Android. Không phải thiếu sót — gói sinh ra để bọc
-`CLLocationManager`, và mọi thứ trong nó là ngữ nghĩa của Apple.
+## Location permission
 
-## Vì sao là một gói, không phải vài tệp trong app
+This package does **not** declare `NSLocationWhenInUseUsageDescription`. The
+wording of a permission prompt belongs to your product, not to a library. Add it
+to your own `Info.plist`:
 
-Đặt một tệp `.swift` vào `ios/Runner/` của một app Flutter thì nó **chỉ được
-biên dịch nếu có trong target Xcode**. Với `project.pbxproj` kiểu cũ, thêm tệp
-bằng tay không đưa nó vào target — và **không có lỗi nào nổ**, mã chỉ lặng lẽ
-không chạy.
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>Used only to compute true north.</string>
+```
 
-Gói plugin có podspec riêng, nên mọi tệp Swift trong nó đều được biên dịch.
+Magnetic heading needs no permission at all. Only `requestTrueNorth()` asks, and
+only when you call it. If the user declines, the stream keeps running on
+magnetic heading — declining is not a dead end.
 
-Muốn chắc gói đã được đăng ký thì **đừng tin log**: gói nuốt
-`MissingPluginException` và trả `false`, nên "kênh hỏng" và "máy không có từ kế"
-trông y hệt nhau. Kiểm ba chỗ tĩnh: `GeneratedPluginRegistrant.m`,
-`Podfile.lock`, và `Runner.app/Frameworks/`.
+## Why a package and not a few files in your app
+
+Dropping a `.swift` file into `ios/Runner/` only compiles it **if it is in the
+Xcode target**. With a classic `project.pbxproj`, adding the file by hand does
+not add it to the target — and nothing fails loudly. The code is simply never
+built.
+
+A plugin package has its own podspec, so every Swift file in it is compiled.
+That is the whole reason this exists as a package.
+
+## License
+
+MIT.
