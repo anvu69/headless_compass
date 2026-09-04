@@ -1,3 +1,10 @@
+## 0.2.0
+
+* Set `CLLocationManager.headingOrientation` from the current interface
+  orientation, and keep it updated when the device rotates. Without this every
+  reading is off by 90 degrees in a landscape-locked app — the default assumes
+  portrait.
+
 ## 0.1.1
 
 * Fix podspec metadata: 0.1.0 shipped with the `flutter create` template values

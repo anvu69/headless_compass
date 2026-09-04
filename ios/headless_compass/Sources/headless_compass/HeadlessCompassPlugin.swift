@@ -78,14 +78,60 @@ extension HeadlessCompassPlugin: FlutterStreamHandler {
     sink = eventSink
     manager.delegate = self
     manager.headingFilter = 0.1
+    capNhatHuongMay()
+
+    // Xoay máy thì phải đặt lại. Không nghe thông báo này thì app khoá ngang
+    // vẫn đúng, nhưng app cho xoay sẽ sai đúng 90° ngay khi người dùng xoay.
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(huongMayDoi),
+      name: UIDevice.orientationDidChangeNotification,
+      object: nil)
+
     manager.startUpdatingHeading()
     return nil
   }
 
   public func onCancel(withArguments _: Any?) -> FlutterError? {
+    NotificationCenter.default.removeObserver(
+      self, name: UIDevice.orientationDidChangeNotification, object: nil)
     manager.stopUpdatingHeading()
     sink = nil
     return nil
+  }
+}
+
+extension HeadlessCompassPlugin {
+  @objc func huongMayDoi() { capNhatHuongMay() }
+
+  /// Cho `CLLocationManager` biết cạnh nào của máy đang là cạnh TRÊN của giao
+  /// diện.
+  ///
+  /// Không đặt thì nó mặc định coi máy đang cầm DỌC, và mọi số đọc lệch đúng
+  /// 90° trên một app khoá nằm ngang. Đây không phải sai số cảm biến — nó là
+  /// một hệ quy chiếu khác, và nó lệch y hệt nhau ở mọi góc.
+  ///
+  /// **Ánh xạ bị ĐẢO, và đó là chỗ dễ sai nhất:** `UIInterfaceOrientation`
+  /// `.landscapeLeft` nghĩa là NÚT HOME nằm bên trái, tức máy đã xoay sang
+  /// PHẢI — nên nó tương ứng `CLDeviceOrientation.landscapeRight`. Đặt thẳng
+  /// tên sang tên là sai 180°, và 180° thì trông "rõ ràng sai" nên may là dễ
+  /// bắt; đặt thẳng ở bản dọc thì lại đúng, nên lỗi chỉ nổ ở bản ngang.
+  func capNhatHuongMay() {
+    let ui: UIInterfaceOrientation
+    if #available(iOS 13.0, *) {
+      ui = UIApplication.shared.connectedScenes
+        .compactMap { $0 as? UIWindowScene }
+        .first?.interfaceOrientation ?? .portrait
+    } else {
+      ui = UIApplication.shared.statusBarOrientation
+    }
+
+    switch ui {
+    case .portraitUpsideDown: manager.headingOrientation = .portraitUpsideDown
+    case .landscapeLeft: manager.headingOrientation = .landscapeRight
+    case .landscapeRight: manager.headingOrientation = .landscapeLeft
+    default: manager.headingOrientation = .portrait
+    }
   }
 }
 
