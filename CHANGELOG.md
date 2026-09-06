@@ -1,3 +1,20 @@
+## 0.2.1
+
+* Set `headingFilter` to `kCLHeadingFilterNone` instead of `0.1` degrees.
+
+  With a filter, CoreLocation stops calling back while the device is still — so
+  from Dart, "the device is sitting on a table" and "the channel is dead" look
+  exactly the same: no samples. No rule above this layer can tell them apart,
+  because the information is already gone here.
+
+  Measured on a real iPad: put the device down and the consuming app went blank
+  three seconds later, when its own silence timer fired. Yet the heading of a
+  still device is still correct — it does not decay.
+
+  With no filter, iOS delivers every update, so silence means one thing only.
+  The cost is more callbacks, and therefore more battery, while the stream is
+  running. That has not been measured.
+
 ## 0.2.0
 
 * Set `CLLocationManager.headingOrientation` from the current interface

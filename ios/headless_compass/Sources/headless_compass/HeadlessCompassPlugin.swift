@@ -77,7 +77,18 @@ extension HeadlessCompassPlugin: FlutterStreamHandler {
     }
     sink = eventSink
     manager.delegate = self
-    manager.headingFilter = 0.1
+    // KHÔNG lọc theo độ. `headingFilter = 0.1` nghĩa là máy NẰM YÊN thì
+    // CoreLocation không gọi lại — và từ phía Dart, "máy nằm yên" với "kênh
+    // chết" cho ra CÙNG MỘT THỨ: không có mẫu. Không luật nào ở tầng trên phân
+    // biệt được hai chuyện ấy, vì thông tin đã mất ở ngay đây.
+    //
+    // Đo trên iPad thật: đặt máy xuống bàn thì đúng 3 giây sau app câm hết, vì
+    // đồng hồ im lặng của nó bật. Mà hướng của một cái máy nằm yên VẪN ĐÚNG —
+    // nó không hỏng theo thời gian.
+    //
+    // `kCLHeadingFilterNone` bắt iOS giao mọi lần cập nhật. Khi ấy im lặng chỉ
+    // còn đúng MỘT nghĩa, và tầng trên khỏi phải đoán.
+    manager.headingFilter = kCLHeadingFilterNone
     capNhatHuongMay()
 
     // Xoay máy thì phải đặt lại. Không nghe thông báo này thì app khoá ngang
