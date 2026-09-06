@@ -1,3 +1,35 @@
+## 0.2.2
+
+* Fix heading being wrong by 90 or 180 degrees after the device is rotated.
+
+  The plugin already set `CLLocationManager.headingOrientation` and already
+  registered for `UIDevice.orientationDidChangeNotification`. But iOS only
+  posts that notification after something calls
+  `UIDevice.current.beginGeneratingDeviceOrientationNotifications()`, and
+  nothing did — not the host app, not any of its ten iOS plugins, not the
+  Flutter 3.44 iOS embedder. So the orientation was applied exactly once, when
+  the stream started, and then froze. Rotating the device end-for-end put every
+  reading out by 180 degrees, with nothing on screen to say so: this is a
+  different frame of reference, not sensor noise, so the error is identical at
+  every angle.
+
+  Two layers now, deliberately redundant:
+
+  1. `beginGeneratingDeviceOrientationNotifications()` on listen, and
+     `endGeneratingDeviceOrientationNotifications()` on cancel. UIKit
+     reference-counts these, so calling them once too often is harmless while
+     calling them too rarely fails silently.
+  2. Re-check `interfaceOrientation` on every heading sample and reapply only
+     when it changed. This takes a completely different route from layer 1, so
+     the same class of failure cannot come back if layer 1 breaks again for
+     some other reason. It also covers two cases layer 1 does not: the device
+     notification can fire *before* the interface has finished rotating, and
+     iPadOS 26 window resizing changes the interface orientation without any
+     device rotation at all.
+
+  Cost: exactly one stale sample per rotation. With `kCLHeadingFilterNone`
+  samples arrive continuously, so that is a few tens of milliseconds.
+
 ## 0.2.1
 
 * Set `headingFilter` to `kCLHeadingFilterNone` instead of `0.1` degrees.
