@@ -1,3 +1,23 @@
+## 0.2.3
+
+* Revert the per-sample orientation re-check added in 0.2.2. It killed the very
+  stream it was meant to protect.
+
+  0.2.2 called the orientation update on *every* heading sample as a redundant
+  second layer. That reads `UIApplication.shared.connectedScenes` dozens of
+  times a second on the main thread, and whenever the interface orientation
+  oscillates near a boundary it writes `headingOrientation` again and again —
+  each write makes CoreLocation rebuild its heading computation. On a real iPad
+  the compass stopped updating after about ten seconds.
+
+  The actual root cause is still fixed, by the first layer:
+  `beginGeneratingDeviceOrientationNotifications()`, without which
+  `UIDevice.orientationDidChangeNotification` never fires at all. That is the
+  standard, cheap fix and it is enough.
+
+  Lesson kept in the source: a redundant layer that kills what it protects is
+  worse than no layer.
+
 ## 0.2.2
 
 * Fix heading being wrong by 90 or 180 degrees after the device is rotated.

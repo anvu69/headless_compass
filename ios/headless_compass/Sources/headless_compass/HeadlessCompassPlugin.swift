@@ -174,31 +174,22 @@ extension HeadlessCompassPlugin: CLLocationManagerDelegate {
   public func locationManager(
     _: CLLocationManager, didUpdateHeading newHeading: CLHeading
   ) {
-    // LỚP PHÒNG VỆ THỨ HAI, và nó cố ý DƯ so với lớp thông báo ở trên.
+    // KHÔNG soát lại hướng ở đây, và đó là một quyết định ĐÃ RÚT LẠI.
     //
-    // Lớp trên đã hỏng một lần theo cách im lặng nhất có thể — đăng ký nghe một
-    // thông báo không ai phát. Một lớp nữa, đi đường KHÁC HẲN, là thứ làm lớp
-    // lỗi ấy không tái diễn dù lớp trên lại hỏng vì lý do khác.
+    // Bản 0.2.2 gọi `capNhatHuongMay()` ở MỖI mẫu đo, làm "lớp phòng vệ thứ
+    // hai" cho lớp thông báo bên trên. Nó đọc `UIApplication.shared
+    // .connectedScenes` mấy chục lần mỗi giây trên luồng chính, và khi giao
+    // diện dao động quanh một ranh hướng thì nó ghi `manager.headingOrientation`
+    // liên tục — mỗi lần ghi là một lần CoreLocation dựng lại phép tính hướng.
     //
-    // Nó cũng đóng hai chỗ lớp trên KHÔNG đóng:
+    // Người dùng cầm iPad thật báo: "chỉ dùng được khoảng 10 giây rồi la bàn
+    // không hoạt động nữa". Lớp phòng vệ giết đúng cái luồng nó sinh ra để bảo
+    // vệ.
     //
-    // - `orientationDidChangeNotification` nổ theo hướng THIẾT BỊ, và nó có thể
-    //   nổ TRƯỚC khi giao diện kịp xoay — đọc `interfaceOrientation` lúc ấy ra
-    //   giá trị CŨ, tức đặt lại mà vẫn sai;
-    // - cảnh cửa sổ đổi cỡ của iPadOS 26, nơi giao diện đổi mà hướng thiết bị
-    //   thì không.
-    //
-    // Giá phải trả là ĐÚNG MỘT mẫu lệch sau mỗi lần xoay: mẫu này vẫn do hệ quy
-    // chiếu cũ tính ra. Với `kCLHeadingFilterNone` thì mẫu về liên tục nên một
-    // mẫu là vài chục mili giây — mắt không thấy.
-    //
-    // Đọc `interfaceOrientation` phải ở luồng chính; delegate của
-    // `CLLocationManager` gọi lại trên chính luồng đã dựng manager, tức luồng
-    // chính, nên chỗ này an toàn. Có `guard` để nếu điều đó thôi đúng thì nó
-    // BỎ QUA lần soát chứ không sập.
-    if Thread.isMainThread {
-      capNhatHuongMay()
-    }
+    // Gốc thật đã được lớp MỘT chữa — bật
+    // `beginGeneratingDeviceOrientationNotifications()` để thông báo xoay máy
+    // thật sự nổ. Lớp hai là thứ tôi thêm cho chắc mà không đo giá của nó.
+    // Một lớp dư làm chết thứ nó bảo vệ thì tệ hơn không có lớp nào.
 
     // trueHeading ÂM nghĩa là chưa có vị trí. Rơi về magneticHeading thay vì
     // đẩy một số âm sang Dart — Dart coi mọi số âm là không tin được, và mặt số
