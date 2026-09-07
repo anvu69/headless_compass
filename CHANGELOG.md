@@ -1,3 +1,20 @@
+## 0.2.5
+
+* Report magnetic field strength alongside each heading sample.
+
+  `HeadingSample.fieldUt` is the magnitude of `CLHeading`'s calibrated `(x, y,
+  z)` vector, in microtesla. Earth's field is 25–65 µT everywhere on the
+  surface, so a reading outside that band means iron or a magnet is nearby —
+  and on an iPad "nearby" includes the device's own folio and Pencil magnets.
+
+  The package only measures and hands the number over. It deliberately carries
+  no threshold: what counts as anomalous, and what to tell the user about it,
+  is a product decision and a public package should not bury it somewhere
+  nobody can change.
+
+  `fieldUt` is nullable and read defensively, so an app pinned to an older tag
+  keeps working.
+
 ## 0.2.4
 
 * Restart heading updates after changing `headingOrientation`.

@@ -214,9 +214,25 @@ extension HeadlessCompassPlugin: CLLocationManagerDelegate {
     // đẩy một số âm sang Dart — Dart coi mọi số âm là không tin được, và mặt số
     // sẽ đứng im dù từ kế vẫn tốt.
     let dungBacThat = wantsTrueNorth && newHeading.trueHeading >= 0
+
+    // Cường độ từ trường: độ lớn vector ba trục, microtesla.
+    //
+    // `CLHeading.x/y/z` là số ĐÃ HIỆU CHUẨN của từ kế. Từ trường Trái Đất nằm
+    // trong 25–65 µT ở mọi nơi trên mặt đất, nên độ lớn ra ngoài khoảng ấy là
+    // dấu hiệu có SẮT hoặc NAM CHÂM gần — và với iPad thì "gần" gồm cả dãy nam
+    // châm gắn bao cùng chỗ hít bút của chính cái máy.
+    //
+    // Chỉ ĐO rồi giao. Ngưỡng nào là bất thường, và nói gì với người dùng, là
+    // việc của tầng trên: một gói công khai không nên chôn quyết định sản phẩm
+    // vào chỗ không ai sửa được.
+    let fieldUt = (newHeading.x * newHeading.x
+      + newHeading.y * newHeading.y
+      + newHeading.z * newHeading.z).squareRoot()
+
     sink?([
       "deg": dungBacThat ? newHeading.trueHeading : newHeading.magneticHeading,
       "accuracyDeg": newHeading.headingAccuracy,
+      "fieldUt": fieldUt,
       "kind": dungBacThat ? "trueNorth" : "magnetic",
     ])
   }

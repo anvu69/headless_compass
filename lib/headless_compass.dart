@@ -18,6 +18,7 @@ class HeadingSample {
     required this.deg,
     required this.accuracyDeg,
     required this.kind,
+    this.fieldUt,
   });
 
   final double deg;
@@ -27,6 +28,22 @@ class HeadingSample {
   final double accuracyDeg;
 
   final HeadingSourceKind kind;
+
+  /// Cường độ từ trường đo được, tính bằng microtesla — độ lớn của vector
+  /// `(x, y, z)` mà `CLHeading` trả về.
+  ///
+  /// `null` khi nền không giao (bản iOS cũ, hoặc mẫu `unavailable`).
+  ///
+  /// Từ trường Trái Đất nằm trong khoảng **25–65 µT** ở mọi nơi trên mặt đất.
+  /// Ra ngoài khoảng ấy nghĩa là có SẮT hoặc NAM CHÂM gần — bao da có nam
+  /// châm, chân bàn, cốt thép sàn, và với iPad thì cả dãy nam châm gắn bao và
+  /// chỗ hít bút của CHÍNH cái máy.
+  ///
+  /// Gói này chỉ ĐO và giao con số; nói gì với người dùng là việc của tầng
+  /// trên. Cố ý không có ngưỡng nào ở đây: ngưỡng là một quyết định sản phẩm,
+  /// và một gói công khai không nên chôn quyết định ấy vào chỗ không ai sửa
+  /// được.
+  final double? fieldUt;
 
   /// Có được phép quay mặt số theo mẫu này không.
   ///
@@ -97,6 +114,15 @@ class HeadingSource {
       return const HeadingSample(
           deg: 0, accuracyDeg: -1, kind: HeadingSourceKind.unavailable);
     }
-    return HeadingSample(deg: deg, accuracyDeg: acc, kind: kind);
+    return HeadingSample(
+      deg: deg,
+      accuracyDeg: acc,
+      kind: kind,
+      // Đọc THẬN TRỌNG: nền cũ không giao khoá này, và một bản app ghim thẻ cũ
+      // vẫn phải chạy được. Thiếu thì `null`, không phải 0 — 0 là một cường độ
+      // CÓ NGHĨA (và là một cường độ bất thường), còn `null` nghĩa là không đo
+      // được.
+      fieldUt: (raw['fieldUt'] as num?)?.toDouble(),
+    );
   }
 }
