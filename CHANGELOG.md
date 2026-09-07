@@ -1,3 +1,16 @@
+## 0.2.4
+
+* Restart heading updates after changing `headingOrientation`.
+
+  Writing `headingOrientation` while `startUpdatingHeading()` is already
+  running makes CoreLocation rebuild its heading computation, and on iOS 26 it
+  then stops delivering samples. No error, no callback — the stream just goes
+  quiet, exactly when the device is rotated. Calling `startUpdatingHeading()`
+  again is a no-op when the stream is healthy, so it costs nothing in the
+  common case and recovers the broken one. It runs only on the branch that
+  actually changed orientation: once per rotation, not once per sample like
+  the layer 0.2.2 had to withdraw.
+
 ## 0.2.3
 
 * Revert the per-sample orientation re-check added in 0.2.2. It killed the very

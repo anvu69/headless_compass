@@ -167,6 +167,25 @@ extension HeadlessCompassPlugin {
     case .landscapeRight: manager.headingOrientation = .landscapeLeft
     default: manager.headingOrientation = .portrait
     }
+
+    // ĐÁNH THỨC LẠI sau khi đổi hệ quy chiếu.
+    //
+    // Người dùng cầm iPad thật: "gặp vấn đề khi xoay màn hình là la bàn đứng
+    // im". Đứng im ĐÚNG LÚC XOAY, tức đúng lúc dòng trên vừa chạy — không
+    // phải sau vài giây, không phải ngẫu nhiên.
+    //
+    // Ghi `headingOrientation` giữa lúc `startUpdatingHeading()` đang chạy
+    // làm CoreLocation dựng lại phép tính hướng, và trên iOS 26 nó thôi giao
+    // mẫu sau đó. Không có lỗi nào nổ, không có thông báo nào — luồng chỉ im.
+    //
+    // Gọi lại `startUpdatingHeading()` là phép KHÔNG ĐỔI khi luồng còn sống
+    // (tài liệu Apple: gọi nhiều lần không sinh thêm luồng), nên nó vô hại ở
+    // ca luồng không đứt và cứu được ca luồng đứt. Chỉ chạy ở nhánh ĐÃ ĐỔI
+    // hướng — mỗi lần xoay đúng một lần, không phải mỗi mẫu như bản 0.2.2 đã
+    // phải rút lại.
+    if sink != nil {
+      manager.startUpdatingHeading()
+    }
   }
 }
 
