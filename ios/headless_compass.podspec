@@ -4,12 +4,11 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'headless_compass'
-  s.version          = '0.2.0'
+  s.version          = '0.3.0'
   s.summary          = 'Headless iOS compass: heading, accuracy and source as a stream.'
   s.description      = <<-DESC
 Wraps CLLocationManager heading into a typed Dart stream. No widgets, no
-exceptions, and no location permission until the app explicitly asks for true
-north.
+exceptions, and no permission requests of any kind.
                        DESC
   s.homepage         = 'https://github.com/anvu69/headless_compass'
   s.license          = { :file => '../LICENSE' }

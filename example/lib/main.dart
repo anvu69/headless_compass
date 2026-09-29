@@ -90,23 +90,6 @@ class _HeadingScreenState extends State<HeadingScreen> {
                     : '±${sample.accuracyDeg.toStringAsFixed(0)}° · '
                         '${sample.kind.name}',
               ),
-              const SizedBox(height: 24),
-              // The only place that asks for location. Denial is not fatal:
-              // the stream keeps running on magnetic heading.
-              FilledButton(
-                onPressed: () async {
-                  final granted = await _compass.requestTrueNorth();
-                  if (!context.mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(granted
-                          ? 'True north enabled'
-                          : 'Denied — staying on magnetic heading'),
-                    ),
-                  );
-                },
-                child: const Text('Use true north'),
-              ),
             ],
           ],
         ),

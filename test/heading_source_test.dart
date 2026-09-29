@@ -43,28 +43,12 @@ void main() {
 
       expect(await HeadingSource().isAvailable(), isFalse);
     });
-
-    test('xin bắc thật mà kênh hỏng thì trả false, không ném', () async {
-      binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        method,
-        (call) async => throw MissingPluginException('không có kênh'),
-      );
-
-      expect(await HeadingSource().requestTrueNorth(), isFalse);
-    });
   });
 
   group('HeadingSample', () {
     test('mẫu từ bắc dùng được', () {
       const s =
           HeadingSample(deg: 32, accuracyDeg: 2, kind: HeadingSourceKind.magnetic);
-
-      expect(s.isUsable, isTrue);
-    });
-
-    test('mẫu bắc thật dùng được', () {
-      const s = HeadingSample(
-          deg: 32, accuracyDeg: 2, kind: HeadingSourceKind.trueNorth);
 
       expect(s.isUsable, isTrue);
     });

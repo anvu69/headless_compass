@@ -33,7 +33,6 @@ if (await compass.isAvailable()) {
 |---|---|
 | `isAvailable()` | `CLLocationManager.headingAvailable()`, asked **at runtime** |
 | `watch()` | Stream of `HeadingSample`: degrees, accuracy, source |
-| `requestTrueNorth()` | Asks for location permission **only when called** |
 
 ## Two negative-number conventions that bite
 
@@ -44,11 +43,6 @@ an error code you can ignore — it is iOS telling you the magnetometer is
 confused. `HeadingSample.isUsable` returns `false` for those samples. Rotating a
 dial to an untrusted number shows the user a wrong value with no sign that it is
 wrong.
-
-**A negative `trueHeading` means there is no location fix yet.** This package
-falls back to `magneticHeading` inside Swift rather than passing the negative
-number to Dart. Passing it through would mark the sample unusable, and the dial
-would freeze while the magnetometer was working perfectly.
 
 ## It never throws
 
@@ -65,20 +59,17 @@ three static places instead of the logs:
 - `ios/Podfile.lock` for `headless_compass`
 - `YourApp.app/Frameworks/` for `headless_compass.framework`
 
-## Location permission
+## No permissions at all
 
-This package does **not** declare `NSLocationWhenInUseUsageDescription`. The
-wording of a permission prompt belongs to your product, not to a library. Add it
-to your own `Info.plist`:
+Magnetic heading needs no permission, and this package asks for none. It does
+not reference `requestWhenInUseAuthorization` anywhere, so linking it does not
+make App Store Connect demand `NSLocationWhenInUseUsageDescription`.
 
-```xml
-<key>NSLocationWhenInUseUsageDescription</key>
-<string>Used only to compute true north.</string>
-```
-
-Magnetic heading needs no permission at all. Only `requestTrueNorth()` asks, and
-only when you call it. If the user declines, the stream keeps running on
-magnetic heading — declining is not a dead end.
+That is why true north is gone since 0.3.0. Apple's upload scanner reads the
+compiled binary, not your call graph: a permission request sitting in a branch
+you never call still earns ITMS-90683 ("Missing purpose string in Info.plist").
+If you need true north, read `CLHeading.trueHeading` from your own
+`CLLocationManager` after your app asks for location itself.
 
 ## Why a package and not a few files in your app
 

@@ -4,6 +4,12 @@ import UIKit
 
 /// Gói `CLLocationManager` heading thành hai kênh cho tầng Dart.
 ///
+/// **Không xin quyền nào.** Từ bắc không cần quyền vị trí. Bản 0.2.x có nhánh
+/// "Bắc thật" gọi `requestWhenInUseAuthorization`, và máy quét của Apple đọc
+/// BINARY chứ không đọc đồ thị gọi: mọi app liên kết gói mà không khai
+/// `NSLocationWhenInUseUsageDescription` đều nhận ITMS-90683, kể cả khi không
+/// bao giờ gọi nhánh ấy. `test/no_location_permission_test.dart` canh chỗ này.
+///
 /// Tách khỏi app thành gói riêng vì một lý do rất cụ thể: `project.pbxproj` của
 /// app chưa dùng nhóm đồng bộ theo thư mục, nên một tệp `.swift` mới đặt vào
 /// `ios/Runner/` sẽ KHÔNG vào target mà cũng không có lỗi nào nổ — nó chỉ lặng
@@ -15,12 +21,6 @@ import UIKit
 public class HeadlessCompassPlugin: NSObject, FlutterPlugin {
   private let manager = CLLocationManager()
   private var sink: FlutterEventSink?
-
-  /// Đã được người dùng cho phép dùng bắc thật chưa.
-  ///
-  /// Từ bắc KHÔNG cần quyền vị trí; chỉ `trueHeading` mới cần. Giữ cờ riêng để
-  /// không bao giờ đọc `trueHeading` khi chưa xin.
-  private var wantsTrueNorth = false
 
   /// Hướng giao diện đã áp vào `manager.headingOrientation` lần gần nhất.
   ///
@@ -45,31 +45,9 @@ public class HeadlessCompassPlugin: NSObject, FlutterPlugin {
     case "isAvailable":
       // Hỏi LÚC CHẠY, không suy từ đời máy: iPad Air M3 bản WiFi có từ kế.
       result(CLLocationManager.headingAvailable())
-    case "requestTrueNorth":
-      requestTrueNorth(result: result)
     default:
       result(FlutterMethodNotImplemented)
     }
-  }
-
-  private func requestTrueNorth(result: @escaping FlutterResult) {
-    guard CLLocationManager.headingAvailable() else {
-      result(false)
-      return
-    }
-    wantsTrueNorth = true
-    manager.requestWhenInUseAuthorization()
-
-    // Rẽ nhánh theo phiên bản thay vì nâng deployment target: dạng thuộc tính
-    // của `authorizationStatus` chỉ có từ iOS 14, mà app còn nhắm 13.0. Nâng
-    // target chỉ vì một dòng là cắt mất máy cũ để đổi lấy một dòng ngắn hơn.
-    let status: CLAuthorizationStatus
-    if #available(iOS 14.0, *) {
-      status = manager.authorizationStatus
-    } else {
-      status = CLLocationManager.authorizationStatus()
-    }
-    result(status == .authorizedWhenInUse || status == .authorizedAlways)
   }
 }
 
@@ -210,11 +188,6 @@ extension HeadlessCompassPlugin: CLLocationManagerDelegate {
     // thật sự nổ. Lớp hai là thứ tôi thêm cho chắc mà không đo giá của nó.
     // Một lớp dư làm chết thứ nó bảo vệ thì tệ hơn không có lớp nào.
 
-    // trueHeading ÂM nghĩa là chưa có vị trí. Rơi về magneticHeading thay vì
-    // đẩy một số âm sang Dart — Dart coi mọi số âm là không tin được, và mặt số
-    // sẽ đứng im dù từ kế vẫn tốt.
-    let dungBacThat = wantsTrueNorth && newHeading.trueHeading >= 0
-
     // Cường độ từ trường: độ lớn vector ba trục, microtesla.
     //
     // `CLHeading.x/y/z` là số ĐÃ HIỆU CHUẨN của từ kế. Từ trường Trái Đất nằm
@@ -230,10 +203,12 @@ extension HeadlessCompassPlugin: CLLocationManagerDelegate {
       + newHeading.z * newHeading.z).squareRoot()
 
     sink?([
-      "deg": dungBacThat ? newHeading.trueHeading : newHeading.magneticHeading,
+      // CHỈ từ bắc. Bắc thật (`trueHeading`) cần quyền vị trí, và gói này cố ý
+      // không xin quyền nào — xem CHANGELOG 0.3.0.
+      "deg": newHeading.magneticHeading,
       "accuracyDeg": newHeading.headingAccuracy,
       "fieldUt": fieldUt,
-      "kind": dungBacThat ? "trueNorth" : "magnetic",
+      "kind": "magnetic",
     ])
   }
 

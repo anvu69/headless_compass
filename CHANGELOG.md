@@ -1,3 +1,27 @@
+## 0.3.0
+
+* **Breaking: true north is removed, and the package no longer requests any
+  permission.**
+
+  0.2.x shipped `HeadingSource.requestTrueNorth()`, which called
+  `CLLocationManager.requestWhenInUseAuthorization()`. Apple's upload scanner
+  reads the binary, not the call graph, so every app linking this package got
+  ITMS-90683 ("Missing purpose string in Info.plist … should contain a
+  NSLocationWhenInUseUsageDescription key") unless it declared that key —
+  including apps that never call `requestTrueNorth()`. Declaring a location
+  purpose string for a permission you never ask for is the wrong fix.
+
+  Removed: `HeadingSource.requestTrueNorth()`, `HeadingSourceKind.trueNorth`,
+  and the `requestTrueNorth` method-channel call. Every sample now reports
+  `HeadingSourceKind.magnetic`. `test/no_location_permission_test.dart` fails
+  if a location-permission request ever comes back into the Swift sources.
+
+  If you need true north, ask for location in your own app and read
+  `CLHeading.trueHeading` from your own `CLLocationManager`.
+
+* `ios/headless_compass.podspec` version now matches `pubspec.yaml` (it had
+  been left at 0.2.0 since the first release).
+
 ## 0.2.5
 
 * Report magnetic field strength alongside each heading sample.

@@ -5,9 +5,6 @@ enum HeadingSourceKind {
   /// Từ bắc — KHÔNG cần quyền vị trí.
   magnetic,
 
-  /// Bắc thật — cần quyền vị trí, và chỉ xin khi người dùng bấm.
-  trueNorth,
-
   /// Không có từ kế, hoặc kênh nền tảng không trả lời.
   unavailable,
 }
@@ -55,9 +52,9 @@ class HeadingSample {
 
 /// Cửa vào duy nhất tới từ kế.
 ///
-/// Tự viết kênh thay vì dùng gói: app chỉ chạy iOS, ta cần đúng ba thứ của
-/// `CLLocationManager`, và spec §5.7 đòi một ranh giới không gói nào giữ hộ —
-/// quyền vị trí chỉ xin khi bấm "Bắc thật".
+/// Tự viết kênh thay vì dùng gói: app chỉ chạy iOS, và ta cần đúng hai thứ
+/// của `CLLocationManager`. Gói KHÔNG xin quyền nào — từ bắc không cần quyền
+/// vị trí (xem CHANGELOG 0.3.0).
 class HeadingSource {
   static const String methodChannelName = 'headless_compass/method';
   static const String eventChannelName = 'headless_compass/stream';
@@ -79,19 +76,6 @@ class HeadingSource {
     }
   }
 
-  /// Xin quyền vị trí rồi bật bắc thật. Trả `false` khi người dùng từ chối.
-  ///
-  /// Gọi CHỈ KHI người dùng bấm "Bắc thật" — spec §5.7. Từ chối thì rơi về Từ
-  /// Bắc, không khoá màn.
-  Future<bool> requestTrueNorth() async {
-    try {
-      final ok = await _method.invokeMethod<bool>('requestTrueNorth');
-      return ok ?? false;
-    } catch (_) {
-      return false;
-    }
-  }
-
   Stream<HeadingSample> watch() => _events
       .receiveBroadcastStream()
       .map((e) => parseSample(Map<String, Object?>.from(e as Map)));
@@ -106,7 +90,6 @@ class HeadingSource {
     final acc = (raw['accuracyDeg'] as num?)?.toDouble();
     final kind = switch (raw['kind']) {
       'magnetic' => HeadingSourceKind.magnetic,
-      'trueNorth' => HeadingSourceKind.trueNorth,
       _ => HeadingSourceKind.unavailable,
     };
 
