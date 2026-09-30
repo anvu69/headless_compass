@@ -33,6 +33,7 @@ if (await compass.isAvailable()) {
 |---|---|
 | `isAvailable()` | `CLLocationManager.headingAvailable()`, asked **at runtime** |
 | `watch()` | Stream of `HeadingSample`: degrees, accuracy, source |
+| `CameraAttitudeSource().watch()` | Raw attitude matrix (xMagneticNorthZVertical) with calibration level |
 
 ## Two negative-number conventions that bite
 

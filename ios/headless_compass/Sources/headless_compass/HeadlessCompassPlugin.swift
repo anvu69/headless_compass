@@ -20,6 +20,9 @@ import UIKit
 /// App không phải gọi tay, và đó chính là chỗ dễ quên khi dựng engine mới.
 public class HeadlessCompassPlugin: NSObject, FlutterPlugin {
   private let manager = CLLocationManager()
+
+  /// Giữ tham chiếu MẠNH: kênh sự kiện không bảo đảm giữ trình xử lý sống.
+  private let attitude = AttitudeStreamHandler()
   private var sink: FlutterEventSink?
 
   /// Hướng giao diện đã áp vào `manager.headingOrientation` lần gần nhất.
@@ -38,6 +41,10 @@ public class HeadlessCompassPlugin: NSObject, FlutterPlugin {
     let events = FlutterEventChannel(
       name: "headless_compass/stream", binaryMessenger: registrar.messenger())
     events.setStreamHandler(instance)
+
+    let attitudeEvents = FlutterEventChannel(
+      name: "headless_compass/attitude", binaryMessenger: registrar.messenger())
+    attitudeEvents.setStreamHandler(instance.attitude)
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {

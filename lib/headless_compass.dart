@@ -109,3 +109,79 @@ class HeadingSource {
     );
   }
 }
+
+/// Mức hiệu chuẩn của từ kế theo CoreMotion.
+///
+/// KHÔNG có số độ nào ở đây: `CMCalibratedMagneticField.accuracy` chỉ nói một
+/// MỨC. Tầng trên muốn nói sai số bằng độ là tự bịa ra con số ấy.
+enum MagneticCalibration { unavailable, uncalibrated, low, medium, high }
+
+/// Một mẫu tư thế của máy, THÔ.
+///
+/// [rotation] là 9 số của `CMAttitude.rotationMatrix` theo thứ tự m11, m12,
+/// m13, m21, …, m33, trong hệ quy chiếu `xMagneticNorthZVertical` (X về bắc
+/// từ, Z thẳng lên). Gói KHÔNG tính phương vị: chiều ánh xạ của ma trận là chỗ
+/// dễ sai nhất, và để nó ở tầng Dart thì ca kiểm gọi thẳng được bằng ma trận
+/// dựng tay.
+class CameraAttitudeSample {
+  const CameraAttitudeSample({
+    required this.rotation,
+    required this.calibration,
+    this.fieldUt,
+  });
+
+  static const unavailable = CameraAttitudeSample(
+    rotation: [],
+    calibration: MagneticCalibration.unavailable,
+  );
+
+  final List<double> rotation;
+  final MagneticCalibration calibration;
+
+  /// Độ lớn từ trường đã hiệu chuẩn, microtesla. Cùng nghĩa với
+  /// [HeadingSample.fieldUt].
+  final double? fieldUt;
+
+  bool get isAvailable => rotation.length == 9;
+}
+
+/// Cửa vào tư thế máy từ `CMDeviceMotion`. Không xin quyền nào.
+class CameraAttitudeSource {
+  static const String eventChannelName = 'headless_compass/attitude';
+  static const EventChannel _events = EventChannel(eventChannelName);
+
+  /// **Không bao giờ phát lỗi.** Thiếu plugin, máy ảo, máy không có từ kế đều
+  /// ra [CameraAttitudeSample.unavailable] hoặc im lặng — không bao giờ một
+  /// ngoại lệ lên tới màn.
+  Stream<CameraAttitudeSample> watch() => _events
+      .receiveBroadcastStream()
+      .map(
+        (e) => e is Map
+            ? parseSample(Map<String, Object?>.from(e))
+            : CameraAttitudeSample.unavailable,
+      )
+      .handleError((Object _) {});
+
+  static CameraAttitudeSample parseSample(Map<String, Object?> raw) {
+    if (raw['kind'] != 'attitude') return CameraAttitudeSample.unavailable;
+    final m = raw['m'];
+    if (m is! List || m.length != 9) return CameraAttitudeSample.unavailable;
+    final values = <double>[];
+    for (final v in m) {
+      if (v is! num || !v.isFinite) return CameraAttitudeSample.unavailable;
+      values.add(v.toDouble());
+    }
+    final calibration = switch (raw['cal']) {
+      -1 => MagneticCalibration.uncalibrated,
+      0 => MagneticCalibration.low,
+      1 => MagneticCalibration.medium,
+      2 => MagneticCalibration.high,
+      _ => MagneticCalibration.uncalibrated,
+    };
+    return CameraAttitudeSample(
+      rotation: List.unmodifiable(values),
+      calibration: calibration,
+      fieldUt: (raw['fieldUt'] as num?)?.toDouble(),
+    );
+  }
+}

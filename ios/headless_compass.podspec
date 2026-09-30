@@ -4,7 +4,7 @@
 #
 Pod::Spec.new do |s|
   s.name             = 'headless_compass'
-  s.version          = '0.3.0'
+  s.version          = '0.4.0'
   s.summary          = 'Headless iOS compass: heading, accuracy and source as a stream.'
   s.description      = <<-DESC
 Wraps CLLocationManager heading into a typed Dart stream. No widgets, no

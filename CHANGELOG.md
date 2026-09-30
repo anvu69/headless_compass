@@ -1,3 +1,14 @@
+## 0.4.0
+
+* **Thêm `CameraAttitudeSource.watch()`: luồng tư thế máy THÔ.** Mỗi mẫu là
+  ma trận xoay 3x3 của `CMAttitude` (9 số, hệ quy chiếu
+  `xMagneticNorthZVertical`), mức hiệu chuẩn từ kế (`MagneticCalibration`) và
+  độ lớn từ trường tính bằng µT.
+* Gửi THÔ, không tính phương vị ở Swift: chiều ánh xạ của ma trận là chỗ dễ sai
+  nhất, và để ở tầng Dart thì ca kiểm gọi thẳng được bằng ma trận dựng tay.
+* Không xin quyền nào — `CMDeviceMotion` không cần quyền. Cổng
+  `test/no_location_permission_test.dart` vẫn canh.
+
 ## 0.3.0
 
 * **Breaking: true north is removed, and the package no longer requests any
